@@ -1,0 +1,99 @@
+Analysis 
+
+# Technical Analysis – ASP.NET Web Shell Detection
+
+## 🧾 Overview
+
+This analysis examines a packet capture file to identify malicious activity within network traffic. The investigation focused on detecting abnormal HTTP behavior and uncovering any embedded malware.
+
+The analysis revealed the successful upload of a malicious ASP.NET web shell, enabling remote command execution on the target system.
+
+---
+
+##  Network Traffic Analysis
+
+### Protocol Observed
+
+* HTTP (unencrypted web traffic)
+
+### Key Findings
+
+* Multiple HTTP requests between internal hosts
+* Suspicious interaction with the endpoint:
+
+  ```
+  /upload.aspx
+  ```
+* Evidence of a file upload using HTTP POST
+* Server responded with:
+
+  ```
+  HTTP/1.1 200 OK
+  ```
+
+These indicators suggest that the upload request was successfully processed by the server.
+
+---
+
+##  File Extraction & Identification
+
+During analysis, a file was identified within the HTTP stream:
+
+* **Filename:** `cmd.aspx`
+* **Content-Type:** `application/octet-stream`
+
+The file was extracted from the packet capture by following the TCP stream, revealing embedded server-side code.
+
+---
+
+##  Malware Analysis
+
+The extracted file was determined to be an ASP.NET web shell written in VB.
+
+### Key Characteristics:
+
+* Imports system-level libraries for process execution
+* Accepts user input from a web interface
+* Executes system commands via the underlying operating system
+* Captures and returns command output to the attacker
+
+### Behavior Summary:
+
+The script creates a process using system libraries and executes commands supplied by a remote user. The output is then returned through the web application interface, effectively granting remote control over the system.
+
+---
+
+##  Attack Chain
+
+1. Attacker establishes HTTP connection
+2. Malicious request sent to `/upload.aspx`
+3. Web shell (`cmd.aspx`) uploaded to server
+4. Server accepts and stores file (200 OK response)
+5. Attacker gains remote command execution capability
+
+---
+
+##  Indicators of Compromise (IOCs)
+
+* Suspicious file: `cmd.aspx`
+* Endpoint: `/upload.aspx`
+* HTTP POST file upload behavior
+* Use of `application/octet-stream` for file transfer
+* Execution of system commands via web application
+
+---
+
+##  Impact Assessment
+
+* Unauthorized remote command execution
+* Potential full system compromise depending on privileges
+* Persistent access via web shell
+* Risk of further exploitation or lateral movement
+
+---
+
+##  Conclusion
+
+The packet capture analysis confirms a successful exploitation of a web application’s file upload functionality. The attacker uploaded a malicious ASP.NET web shell, enabling remote command execution on the target system.
+
+This investigation demonstrates how network traffic analysis can be used to detect and reconstruct real-world attack scenarios, emphasizing the importance of monitoring HTTP activity and validating file uploads.
